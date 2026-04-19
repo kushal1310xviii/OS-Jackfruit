@@ -227,37 +227,37 @@ sudo dmesg | tail -5
 
 ## 6. Demo Screenshots
 
-### Screenshot 1 — Kernel module loaded and supervisor started
-![Screenshot 1](boilerplate/2.png)
-*`/dev/container_monitor` device confirmed, supervisor started with control socket at `/tmp/mini_runtime.sock`*
+### Screenshot 1 — Multi-container supervision
+![Screenshot 1](boilerplate/ss1.png)
+*Two containers alpha (pid=4938) and beta (pid=4943) started and running simultaneously under one supervisor process, `ps` confirming both in running state*
 
-### Screenshot 2 — Container start and metadata tracking
-![Screenshot 2](boilerplate/4.png)
-*Container alpha started with pid=4677, `ps` showing ID, PID, STATE, SOFT(MiB) and HARD(MiB) memory limits*
+### Screenshot 2 — Kernel module loaded and supervisor started
+![Screenshot 2](boilerplate/ss2.png)
+*`/dev/container_monitor` device confirmed with correct permissions, supervisor started with control socket at `/tmp/mini_runtime.sock`*
 
-### Screenshot 3 — Logging pipeline and container stop
-![Screenshot 3](boilerplate/5.png)
-*`logs alpha` showing log output via bounded-buffer pipeline, `stop alpha` sending SIGTERM to pid=4677*
+### Screenshot 3 — Metadata tracking
+![Screenshot 3](boilerplate/ss3.png)
+*`ps` command output showing tracked container metadata: ID, PID, STATE, SOFT(MiB) and HARD(MiB) memory limits*
 
-### Screenshot 4 — Memory limit enforcement via kernel module
-![Screenshot 4](boilerplate/8.png)
-*memtest container started with 20/40 MiB limits, dmesg showing kernel module registering and tracking all containers*
+### Screenshot 4 — CLI and IPC
+![Screenshot 4](boilerplate/ss4.png)
+*`logs alpha` command issued via UNIX domain socket, supervisor responds with log output; `stop alpha` demonstrates SIGTERM delivery via IPC channel*
 
-### Screenshot 5 — Scheduler experiment: two containers running
-![Screenshot 5](boilerplate/11.png)
-*cpu-high (nice 0) and cpu-low (nice 10) both running simultaneously under supervisor, ps showing all active containers*
+### Screenshot 5 — Kernel module container tracking
+![Screenshot 5](boilerplate/ss5.png)
+*dmesg showing complete container_monitor event history: module loaded, containers registered with soft/hard limits, processes exited and removed from monitored list*
 
-### Screenshot 6 — Scheduler experiment: clean stop
-![Screenshot 6](boilerplate/13.png)
-*SIGTERM sent to cpu-high pid=4726 and cpu-low pid=4732, demonstrating clean multi-container shutdown*
+### Screenshot 6 — Memory limit enforcement
+![Screenshot 6](boilerplate/ss6.png)
+*memtest container started with soft=20MiB hard=40MiB limits, `ps` showing memtest alongside beta and alpha with correct limit metadata*
 
-### Screenshot 7 — Supervisor graceful shutdown
-![Screenshot 7](boilerplate/15.png)
-*Supervisor clean exit after Ctrl+C, `rmmod monitor` succeeds, dmesg confirms `Module unloaded`*
+### Screenshot 7 — Scheduling experiment
+![Screenshot 7](boilerplate/ss7.png)
+*cpu-high (nice 0) and cpu-low (nice 10) both running simultaneously under supervisor, demonstrating CFS weight-based scheduling with different priority levels*
 
-### Screenshot 8 — Complete kernel module event history
-![Screenshot 8](boilerplate/17.png)
-*Full dmesg history: all container registrations, process exits, cpu-high/cpu-low lifecycle, final Module unloaded*
+### Screenshot 8 — Clean teardown
+![Screenshot 8](boilerplate/ss8.png)
+*Supervisor clean exit after Ctrl+C, `rmmod monitor` succeeds, `ps aux | grep engine` shows no zombie processes, dmesg confirms `Module unloaded`*
 
 ---
 
@@ -363,3 +363,4 @@ After teardown the following were verified:
 - All file descriptors closed — pipes, log files, socket, monitor device
 - Kernel linked list freed on `rmmod` — confirmed via `dmesg` showing `Module unloaded`
 - Control socket `/tmp/mini_runtime.sock` removed on supervisor exit
+- `ps aux | grep engine` after shutdown shows no lingering engine processes
